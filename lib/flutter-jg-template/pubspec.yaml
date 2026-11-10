@@ -1,0 +1,17 @@
+name: jg_design_system
+description: Un Design System minimalista, svizzero, ultramoderno, fluido e glassmorfico per applicazioni Flutter.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
