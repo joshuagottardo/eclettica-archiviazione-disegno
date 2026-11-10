@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Servizio di persistenza delle impostazioni dell'applicazione.
 class SettingsService {
-  static const _keyApiKey = 'gemini_api_key_secure';
-  static const _keyLegacyApiKey = 'gemini_api_key';
+  static const _keyApiKey = 'gemini_api_key';
   static const _keyModel = 'gemini_model';
   static const _keyDestination = 'destination_folder';
   static const _keyAuthorMap = 'author_map';
@@ -15,36 +13,21 @@ class SettingsService {
   static const String defaultModel = 'gemini-flash-lite-latest';
   static const Map<String, String> defaultAuthorMap = {};
 
-  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
-    mOptions: MacOsOptions(usesDataProtectionKeychain: false),
-  );
-
-  /// Recupera la chiave API (Keychain o SharedPreferences).
+  /// Recupera la chiave API salvata localmente.
   static Future<String> getApiKey() async {
     try {
-      final key = await _secureStorage.read(key: _keyApiKey);
-      if (key != null && key.trim().isNotEmpty) return key.trim();
-    } catch (_) {}
-
-    try {
       final prefs = await SharedPreferences.getInstance();
-      final key = prefs.getString(_keyLegacyApiKey);
-      if (key != null && key.trim().isNotEmpty) return key.trim();
-    } catch (_) {}
-
-    return '';
+      return prefs.getString(_keyApiKey)?.trim() ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 
-  /// Salva la chiave API nelle preferenze locali protette.
+  /// Salva la chiave API nelle preferenze locali dell'applicazione.
   static Future<void> setApiKey(String key) async {
-    final cleanKey = key.trim();
-    try {
-      await _secureStorage.write(key: _keyApiKey, value: cleanKey);
-    } catch (_) {}
-
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyLegacyApiKey, cleanKey);
+      await prefs.setString(_keyApiKey, key.trim());
     } catch (_) {}
   }
 
@@ -53,28 +36,36 @@ class SettingsService {
   }
 
   static Future<void> setModel(String model) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyModel, defaultModel);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyModel, defaultModel);
+    } catch (_) {}
   }
 
   static Future<String> getDestinationFolder() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyDestination) ?? '';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_keyDestination) ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 
   static Future<void> setDestinationFolder(String path) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyDestination, path);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyDestination, path);
+    } catch (_) {}
   }
 
   /// Recupera il dizionario delle corrispondenze sigla -> nome cartella.
   static Future<Map<String, String>> getAuthorMap() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonStr = prefs.getString(_keyAuthorMap);
-    if (jsonStr == null || jsonStr.isEmpty) {
-      return Map<String, String>.from(defaultAuthorMap);
-    }
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_keyAuthorMap);
+      if (jsonStr == null || jsonStr.isEmpty) {
+        return Map<String, String>.from(defaultAuthorMap);
+      }
       final decoded = jsonDecode(jsonStr);
       return Map<String, String>.from(decoded);
     } catch (_) {
@@ -84,27 +75,41 @@ class SettingsService {
 
   /// Salva il dizionario autori.
   static Future<void> setAuthorMap(Map<String, String> map) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyAuthorMap, jsonEncode(map));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAuthorMap, jsonEncode(map));
+    } catch (_) {}
   }
 
   static Future<bool> getAutoRotate() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyAutoRotate) ?? true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_keyAutoRotate) ?? true;
+    } catch (_) {
+      return true;
+    }
   }
 
   static Future<void> setAutoRotate(bool autoRotate) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyAutoRotate, autoRotate);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyAutoRotate, autoRotate);
+    } catch (_) {}
   }
 
   static Future<bool> getDebugMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyDebugMode) ?? false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_keyDebugMode) ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<void> setDebugMode(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyDebugMode, enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyDebugMode, enabled);
+    } catch (_) {}
   }
 }
